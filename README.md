@@ -1,68 +1,133 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+npx create-react-app
 
-## Available Scripts
+# Install tinacms
 
-In the project directory, you can run:
+yarn add tinacms styled-components
 
-### `yarn start`
+## App.js
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Import TinaProvider & TinaCMS, create an instance of TinaCMS
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+- [ ] wrap TinaProvider,
 
-### `yarn test`
+- [ ] pass cms,
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- [ ] configure sidebar,
 
-### `yarn build`
+```jsx
+const cms = new TinaCMS({
+    sidebar:true
+});
+  return (
+    <TinaProvider cms={cms}>
+      <div className="App">
+        <h1>Hello Tina!</h1>
+      </div>
+    </TinaProvider>
+```
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### import useCMS
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+- [ ] access cms
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- [ ] toggle cms state with onClick on EditButton
 
-### `yarn eject`
+```jsx
+function EditButton() {
+  const cms = useCMS();
+  return (
+    <button onClick={() => cms.toggle()}>
+      {cms.enabled ? 'Exit Edit' : 'Edit Site'}
+    </button>
+  );
+}
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Edit Content
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Create & Register Form with useForm,pass useForm into usePlugin hook
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+#### import useForm and usePlugin
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+#### define form config object
 
-## Learn More
+```jsx
+{
+        name: "title",
+        label: "TITLE",
+        component: "text",
+},
+{
+        component: "select",
+        name: "frontmatter.names",
+        label: "Names",
+        description: "Select an Hello name",
+        options: ["Tina", "React", "Next", "Zoooommmbiiee"],
+},
+{
+        name: "description",
+        component: "textarea",
+        label: "Description",
+        description: "Enter the post description here",
+}
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- [ ] 1. create Form
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```jsx
+const [editableData, form] = useForm(formConfig);
+```
 
-### Code Splitting
+### useForm 需要具有属性的表单配置对象，这些属性确定表单在加载和保存时的行为方式，可用的字段以及其他元数据。
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+- useForm Hook 返回的第一条数据（在上面的示例中为 editableData ）是一个对象，包含可通过表单进行编辑的所有数据。 当用户编辑表单中的数据时，此对象中的值会更改
 
-### Analyzing the Bundle Size
+- useForm Hook 第二条数据（在上面的示例中为 form ）是该挂钩创建的表单对象
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+- useForm 接收的第一个参数（在上例中为 formConfig ）是用于配置表单的对象 (id, fields,initialValues, onSubmit 是经常性的)
 
-### Making a Progressive Web App
+- [ ] 2. register with CMS
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+```jsx
+usePlugin(form);
+```
 
-### Advanced Configuration
+### Fields are added to forms via the fields array and create the editing interface of a form
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+#### default Field Plugins
 
-### Deployment
+```jsx
+Text，Textarea，Number，Image，'Color'，Toggle，Select，Tags，List，Group，Group List，Blocks
+```
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+## Track and Save data changes with Backend
 
-### `yarn build` fails to minify
+（Learning to be updated)
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+```jsx
+async loadInitialValues() {
+      return await fetch(
+        "https://example"
+      ).then((res) => res.json());
+    },
+```
+
+```jsx
+async onSubmit(formData) {
+      return await fetch("https://example", {
+        method: "PUT",
+        body: JSON.stringify({
+          id: 1,
+          title: formData.title,
+          body: formData.body,
+          userId: 1,
+        }),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => console.log("returned data: ", data))
+        .catch((e) => console.error(e));
+    },
+```

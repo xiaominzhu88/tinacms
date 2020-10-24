@@ -2,9 +2,11 @@ import React from 'react';
 import { useCMS, useForm, usePlugin } from 'tinacms';
 
 function PageContent() {
+  const [cmsOpen, setCmsOpen] = React.useState(false);
   //define initialValues as page static content
   const pageData = {
     title: 'Hello!',
+    content: 'Click on the Button below ',
   };
 
   // define form config object
@@ -24,14 +26,14 @@ function PageContent() {
         component: 'select',
         name: 'frontmatter.name',
         label: 'Names',
-        description: 'Select an Hello name',
+        description: 'Select to say Hello',
         options: ['Tina', 'React', 'Next', 'Zoooommmbiiee'],
       },
       {
         name: 'description',
         component: 'textarea',
         label: 'Description',
-        description: 'Enter the post description here',
+        description: 'Enter description here',
       },
 
       {
@@ -44,10 +46,10 @@ function PageContent() {
         },
 
         // Decide the file upload directory for the page
-        uploadDir: () => '/static/public/',
+        uploadDir: () => '/static/downloads/',
 
         // Generate the src attribute for the preview image.
-        previewSrc: (fullSrc) => fullSrc.replace('/static', ''),
+        // previewSrc: (fullSrc) => fullSrc.replace('/static', ''),
       },
     ],
 
@@ -70,7 +72,7 @@ function PageContent() {
           title: formData.title,
           description: formData.description,
           name: formData.frontmatter.name,
-          image: formData.image.src, //src:bird.jpg
+          image: formData.image.src,
         }),
         headers: {
           'Content-type': 'application/json; charset=UTF-8',
@@ -87,6 +89,10 @@ function PageContent() {
   // register with CMS
   usePlugin(form);
   console.log('editableData: ', editableData); // initialValues
+
+  function openCms() {
+    setCmsOpen(true);
+  }
   return (
     <div>
       {/* render 'editableData' returned from 'useForm' hook */}
@@ -101,21 +107,47 @@ function PageContent() {
         }
       >
         <h2>{editableData?.title}</h2>
+        <div>
+          {!cmsOpen ? (
+            editableData?.content
+          ) : (
+            <>
+              <p>
+                Open Editor Top-Left and choose your favorite image
+                <span role="img" aria-label="editor">
+                  🌟
+                </span>
+              </p>
+              <p>
+                Open Editor Bottom-Left and edit page content
+                <span role="img" aria-label="editor">
+                  🖌
+                </span>
+              </p>
+            </>
+          )}
+        </div>
+
         <h4>{editableData?.frontmatter?.name}</h4>
 
         <p>{editableData?.description}</p>
       </div>
-      <EditButton />
+      <EditButton clickButton={openCms} />
     </div>
   );
 }
 
 export default PageContent;
 
-function EditButton() {
+function EditButton({ clickButton }) {
   const cms = useCMS();
   return (
-    <button onClick={() => cms.toggle()}>
+    <button
+      onClick={() => {
+        cms.toggle();
+        clickButton();
+      }}
+    >
       {cms.enabled ? 'Exit Edit' : 'Edit Site'}
     </button>
   );

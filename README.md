@@ -132,9 +132,9 @@ async onSubmit(formData) {
     },
 ```
 
-### useScreenPlugin
+## useScreenPlugin
 
-## Componnet Plugins
+### Component Plugins
 
 The ScreenPlugin has three main pieces: a name, an icon, and a React Component, can render modal UI and handle various content editing needs
 
